@@ -1,10 +1,11 @@
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { memo } from 'react';
 import type { Approval, Message, ToolCall } from '@hermes-pwa/core';
 import { ToolGroup } from './ToolGroup';
 import { TodoPanel } from './TodoPanel';
 import { ThinkingDisclosure } from './ThinkingDisclosure';
-import { MARKDOWN_COMPONENTS, areMessageBubblePropsEqual, type MessageBubbleProps } from './MessageBubble.helpers';
+import { MARKDOWN_COMPONENTS, MARKDOWN_REMARK_PLUGINS, areMessageBubblePropsEqual, type MessageBubbleProps } from './MessageBubble.helpers';
 
 const APPROVAL_TOOL_NAMES = new Set(['terminal', 'execute_code']);
 const APPROVAL_INLINE_TIME_WINDOW_MS = 5 * 60_000;
@@ -140,7 +141,7 @@ function MessageBubbleView({ message, rpc, isLast, streaming, liveStatus, liveFa
 
       {message.text ? (
         <div className="hm-message__text">
-          <ReactMarkdown components={MARKDOWN_COMPONENTS}>{message.text}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={MARKDOWN_REMARK_PLUGINS} components={MARKDOWN_COMPONENTS}>{message.text}</ReactMarkdown>
           {showCaret && <span className="hm-message__caret" />}
         </div>
       ) : null}

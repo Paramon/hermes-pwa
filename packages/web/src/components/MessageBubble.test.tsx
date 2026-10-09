@@ -12,6 +12,19 @@ describe('MessageBubble', () => {
     useChatStore.setState({ sessionId: undefined, storedSessionId: undefined, messages: [], streaming: false, error: undefined });
   });
 
+  it('renders GFM tables as real tables instead of one pipe-separated paragraph', () => {
+    const text = '**Servers:**\n\n| Server | usable | failed |\n|---|---|---|\n| 38.180.235.129 | 45 | 246 |\n| 38.244.156.250 | 38 | 271 |';
+    const { container } = render(
+      <MessageBubble message={{ id: 'gfm-table', role: 'assistant' as const, text, createdAt: undefined }} rpc={rpcMock} />,
+    );
+    const table = container.querySelector('table');
+    expect(table).not.toBeNull();
+    expect(container.querySelectorAll('thead th')).toHaveLength(3);
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(2);
+    expect(container.querySelector('.hm-md-table-wrap')).not.toBeNull();
+    expect(container.textContent).not.toContain('|---|');
+  });
+
   it('memo comparator skips only unchanged message bubble props', () => {
     const message = { id: 'memo-old', role: 'assistant' as const, text: 'Completed markdown', createdAt: undefined };
     expect(
@@ -343,7 +356,7 @@ describe('MessageBubble', () => {
   });
 
   it('keeps ordinary markdown checklists when they are not a todo summary', () => {
-    render(
+    const { container } = render(
       <MessageBubble
         rpc={rpcMock}
         message={{
@@ -356,7 +369,11 @@ describe('MessageBubble', () => {
     );
 
     expect(screen.getByText('Check manually:')).toBeInTheDocument();
-    expect(screen.getByText(/\[x\] item stays as regular markdown/)).toBeInTheDocument();
+    // GFM renders the task list item as a checked checkbox plus its text.
+    expect(screen.getByText(/item stays as regular markdown/)).toBeInTheDocument();
+    const checkbox = container.querySelector('input[type="checkbox"]') as HTMLInputElement | null;
+    expect(checkbox).not.toBeNull();
+    expect(checkbox?.checked).toBe(true);
   });
 
   it('renders app icon and inline live status with animated activity dots', () => {
