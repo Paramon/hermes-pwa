@@ -59,6 +59,41 @@ describe('MobileTab', () => {
     expect(screen.getByRole('link', { name: /Manifest/i })).toBeInTheDocument();
   });
 
+  it('uses the host SDK authedFetch for dashboard /api calls', async () => {
+    const authedFetch = vi.fn(async (url: string) => {
+      if (url.includes('/diagnostics')) {
+        return new Response(
+          JSON.stringify({
+            origin: 'http://127.0.0.1:9119',
+            https: false,
+            localhost: true,
+            private_ip: false,
+            app_url: 'http://127.0.0.1:9119/dashboard-plugins/hermes-pwa/dist/mobile/index.html',
+            manifest_url: 'http://127.0.0.1:9119/dashboard-plugins/hermes-pwa/dist/mobile/manifest.json',
+            service_worker_url: 'http://127.0.0.1:9119/dashboard-plugins/hermes-pwa/dist/mobile/service-worker.js',
+            app_scope: 'http://127.0.0.1:9119/dashboard-plugins/hermes-pwa/dist/mobile/',
+            dist_ready: true,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response('{}', { status: 200, headers: { 'content-type': 'application/json' } });
+    });
+    vi.stubGlobal('__HERMES_PLUGIN_SDK__', { authedFetch });
+
+    render(<MobileTab />);
+
+    await waitFor(() => {
+      expect(authedFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/plugins/hermes-pwa/diagnostics'),
+        expect.anything(),
+      );
+    });
+    // No unauthenticated fetch to the protected diagnostics route.
+    const rawDiagCalls = fetchSpy.mock.calls.filter(([u]) => String(u).includes('/diagnostics'));
+    expect(rawDiagCalls).toHaveLength(0);
+  });
+
   it('renders a QR code for the mobile app URL', async () => {
     render(<MobileTab />);
     const qr = await screen.findByRole('img', { name: /QR code for Hermes Mobile app URL/i });

@@ -40,8 +40,20 @@ function getPluginBase(): string {
   return `${origin}/api/plugins/hermes-pwa`;
 }
 
+type AuthedFetch = (url: string, init?: RequestInit) => Promise<Response>;
+
+// Dashboard /api/* routes need the dashboard session (loopback token header or
+// gated cookie). The host SDK's authedFetch attaches the right one; fall back to
+// a plain same-origin fetch when the SDK is unavailable (tests, older hosts).
+function getAuthedFetch(): AuthedFetch {
+  const sdk = (typeof window === 'undefined' ? undefined : (window as unknown as {
+    __HERMES_PLUGIN_SDK__?: { authedFetch?: AuthedFetch };
+  }).__HERMES_PLUGIN_SDK__);
+  return sdk?.authedFetch ?? ((url, init) => fetch(url, init));
+}
+
 async function fetchJson<T>(url: string): Promise<T> {
-  const res = await fetch(url, { credentials: 'include' });
+  const res = await getAuthedFetch()(url, { credentials: 'include' });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json() as Promise<T>;
 }
