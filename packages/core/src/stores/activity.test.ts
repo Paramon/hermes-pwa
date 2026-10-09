@@ -67,6 +67,17 @@ describe('useActivityStore', () => {
     expect(useActivityStore.getState().error).toBe('nope');
   });
 
+  it('respondApproval keeps item and explains when the session is hosted by another process (4001)', async () => {
+    useActivityStore.setState({
+      items: [{ id: 'a-1', kind: 'approval', status: 'needs_you', title: 'Run command', sessionId: 'sess-1', createdAt: 1 }],
+    });
+    vi.mocked(rpcMock.request).mockRejectedValue(Object.assign(new Error('4001: session not found'), { code: 4001 }));
+    await expect(useActivityStore.getState().respondApproval(rpcMock, 'a-1', 'approve')).resolves.toBeUndefined();
+    expect(useActivityStore.getState().items).toHaveLength(1);
+    expect(useActivityStore.getState().error).toMatch(/another|not running/i);
+    expect(useActivityStore.getState().error).not.toMatch(/4001/);
+  });
+
   it('respondApproval removes stale approval when backend says no pending approval', async () => {
     useActivityStore.setState({
       items: [{ id: 'a-1', kind: 'approval', status: 'needs_you', title: 'Deploy', sessionId: 'sess-1', createdAt: 1 }],

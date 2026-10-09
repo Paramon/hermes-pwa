@@ -94,6 +94,12 @@ function isStaleApprovalError(err: unknown): boolean {
   return /no pending approval for session|no pending approval/i.test(message);
 }
 
+function isSessionNotHostedError(err: unknown): boolean {
+  const code = (err as { code?: unknown } | null)?.code;
+  const message = err instanceof Error ? err.message : String(err ?? '');
+  return code === 4001 || /\b4001\b|session not found/i.test(message);
+}
+
 export const useActivityStore = create<ActivityStore>((set, get) => ({
   items: [],
   loading: false,
@@ -131,6 +137,16 @@ export const useActivityStore = create<ActivityStore>((set, get) => ({
       if (isStaleApprovalError(err)) {
         const msg = 'Approval expired or was already handled.';
         set((s) => ({ items: removeById(s.items, id), error: msg }));
+        return;
+      }
+      if (isSessionNotHostedError(err)) {
+        // The approval belongs to a session run by another Hermes process (for
+        // example the desktop app), so this dashboard cannot answer it. Keep the
+        // item visible and explain instead of surfacing a raw RPC error code.
+        set({
+          error:
+            'This approval belongs to a Hermes session this dashboard is not running (for example the desktop app). Approve it there.',
+        });
         return;
       }
       const msg = err instanceof Error ? err.message : 'Failed to respond.';
