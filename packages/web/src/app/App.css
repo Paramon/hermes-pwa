@@ -1990,7 +1990,7 @@ a {
   font-family: var(--hm-font-mono, ui-monospace, monospace);
   font-size: var(--hm-fs-small);
   color: var(--hm-color-text);
-  background: #f5f7fd;
+  background: var(--hm-color-surface-2);
   border: 1px solid var(--hm-color-border);
   border-radius: var(--hm-radius-md);
   padding: var(--hm-space-3);
@@ -2020,9 +2020,9 @@ a {
 }
 
 .hm-approval-card__deny {
-  background: #fff;
-  border: 1px solid #e0bcbc;
-  color: #c4413c;
+  background: var(--hm-color-surface);
+  border: 1px solid var(--hm-color-danger);
+  color: var(--hm-color-danger);
 }
 
 .hm-empty-state__icon {

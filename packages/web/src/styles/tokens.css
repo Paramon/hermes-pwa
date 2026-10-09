@@ -158,6 +158,10 @@
   --hm-color-success-bg: #11261a;
   --hm-color-warning-bg: #2a2110;
   --hm-color-danger-bg:  #2a1414;
+
+  --hm-color-success-strong: #8ce99a;
+  --hm-color-warning-strong: #ffd479;
+  --hm-color-danger-strong:  #ff9b9b;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -184,6 +188,10 @@
     --hm-color-success-bg: #11261a;
     --hm-color-warning-bg: #2a2110;
     --hm-color-danger-bg:  #2a1414;
+
+    --hm-color-success-strong: #8ce99a;
+    --hm-color-warning-strong: #ffd479;
+    --hm-color-danger-strong:  #ff9b9b;
   }
 }
 
