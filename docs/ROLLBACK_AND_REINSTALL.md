@@ -6,7 +6,7 @@ This project will be tested against the default Hermes profile, so every install
 
 - Plugin name: `hermes-pwa` (`plugin.yaml`).
 - User-installed plugins live under: `~/.hermes/plugins/`.
-- Enable/disable state lives in: `~/.hermes/config.yaml`, under `plugins.enabled` / `plugins.disabled`.
+- Enable/disable state is managed by the Hermes CLI (`hermes plugins enable|disable|list`).
 - Hermes gateway must be restarted after plugin enable/disable/remove.
 - `hermes plugins install ... --force` removes the existing plugin directory and reinstalls.
 - `hermes plugins remove hermes-pwa` deletes the installed plugin directory.
@@ -17,7 +17,7 @@ Before testing on the default profile, create both:
 
 1. A **full Hermes backup** with `hermes backup`.
 2. A **small plugin-state snapshot** of:
-   - `~/.hermes/config.yaml`
+   - `hermes plugins list` output (enable/disable state)
    - `~/.hermes/plugins/hermes-pwa/` if present
    - gateway service status
 
@@ -93,7 +93,7 @@ If disable/remove/restart does not restore Hermes:
    mkdir -p ~/.hermes/plugins-disabled
    mv ~/.hermes/plugins/hermes-pwa ~/.hermes/plugins-disabled/hermes-pwa.$(date -u +%Y%m%dT%H%M%SZ) 2>/dev/null || true
    ```
-3. Edit `~/.hermes/config.yaml` and remove `hermes-pwa` from `plugins.enabled`; add it to `plugins.disabled` if needed.
+3. Disable the plugin through the CLI: `hermes plugins disable hermes-pwa` (verify with `hermes plugins list`).
 4. Start gateway:
    ```bash
    hermes gateway start
